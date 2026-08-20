@@ -1,0 +1,10 @@
+node_modules/
+*.log
+.env*
+!.env.example
+server/data/urls.json
+server/data/*.tmp
+coverage/
+dist/
+.vite/
+.DS_Store
