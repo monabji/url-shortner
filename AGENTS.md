@@ -2,13 +2,14 @@
 
 ## Project Structure & Module Organization
 
-This repository is a full-stack URL shortener. The intended layout is:
+This repository contains a full-stack URL shortener:
 
 - `client/`: React frontend and browser-facing UI.
-- `server/`: Node.js/Express REST API, URL persistence, and redirect handling.
+- `server/`: Node.js/Express REST API, JSON-backed persistence, redirect handling, and tests.
+- `server/data/`: generated local URL data; keep it untracked.
 - `.env` files: local configuration for the backend; keep them untracked.
 
-The repository currently contains the project README and scaffolding guidance. Add implementation files under the corresponding `client/` or `server/` directory rather than placing application code at the root.
+Add implementation files under the corresponding `client/` or `server/` directory rather than placing application code at the root.
 
 ## Build, Test, and Development Commands
 
@@ -19,7 +20,7 @@ cd server && npm install
 cd ../client && npm install
 ```
 
-Run the backend with `cd server && npm run dev` and the frontend with `cd client && npm start` in separate terminals. Build the frontend for production with `cd client && npm run build`. Once package scripts are added, run the available test suites with `cd server && npm test` and `cd client && npm test`.
+Run the backend with `cd server && npm run dev` and the frontend with `cd client && npm run dev` in separate terminals. Build the frontend for production with `cd client && npm run build`. Run the server tests with `cd server && npm test`. The client currently has no test files, so `cd client && npm test` reports that no tests were found.
 
 ## Coding Style & Naming Conventions
 
@@ -27,7 +28,7 @@ Use consistent 2-space indentation in JavaScript, JSX, JSON, and configuration f
 
 ## Testing Guidelines
 
-No test framework or coverage threshold is configured currently. Add tests alongside the feature they cover, using names that describe behavior (for example, `creates-short-url.test.js` or `UrlForm.test.jsx`). Cover URL validation, short-code creation, redirect behavior, and API error responses.
+The server uses Node's built-in test runner (`node --test`) and has no coverage threshold. Server tests are black-box integration tests: they launch the API on an available local port and isolate `server/data/urls.json`, so tests must clean up child processes and restore the data file. Cover URL validation, short-code creation, redirect and click-count behavior, persistence/listing, and API error responses. Add tests alongside the feature they cover, using names that describe behavior (for example, `creates-short-url.test.js` or `UrlForm.test.jsx`).
 
 ## Commit & Pull Request Guidelines
 
@@ -37,4 +38,4 @@ Pull requests should explain the behavior change, list verification commands, li
 
 ## Security & Configuration
 
-Validate HTTP/HTTPS destinations, guard against unsafe redirects, rate-limit URL creation, and generate unpredictable short codes. Store `PORT`, `DATABASE_URL`, `CLIENT_URL`, and `BASE_URL` in local environment configuration rather than source control.
+Validate HTTP/HTTPS destinations, guard against unsafe redirects, rate-limit URL creation, and generate unpredictable short codes. The current implementation validates protocols and uses cryptographically secure short codes, but does not yet provide rate limiting or production-grade database persistence; document or test any future changes. Store `PORT`, `CLIENT_URL`, and `BASE_URL` in local environment configuration rather than source control. Do not add `DATABASE_URL` until the server actually supports it.

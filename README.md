@@ -1,153 +1,61 @@
 # URL Shortener
 
-A full-stack URL shortener built with **Express.js** and **React.js**.
+A small full-stack URL shortener built with React, Vite, Node.js, and Express. Links are stored locally in `server/data/urls.json`, so no external database is required for development.
 
-The application accepts a long URL, generates a shorter link, and redirects visitors from the short link to the original destination.
+## Run locally
 
-## Features
+Prerequisite: Node.js 18+.
 
-- Create short URLs from long URLs
-- Redirect short URLs to their original destinations
-- React-based frontend
-- Express.js backend API
-- Simple foundation for adding analytics, authentication, expiration dates, and custom aliases
-
-## Tech Stack
-
-- **Frontend:** React.js
-- **Backend:** Node.js and Express.js
-- **API format:** REST/JSON
-- **Database:** Configure the database used by your implementation
-
-## Project Structure
-
-```text
-.
-├── client/       # React frontend
-├── server/       # Express backend
-└── README.md
-```
-
-> If your project uses different folder names, update this section to match the repository structure.
-
-## Prerequisites
-
-- Node.js 18 or newer
-- npm or another Node.js package manager
-- A database, if required by the backend implementation
-
-## Getting Started
-
-Clone the repository and install the dependencies:
+Install dependencies in each application:
 
 ```bash
-git clone <repository-url>
-cd <project-directory>
+cd server && npm install
+cd ../client && npm install
 ```
 
-Install frontend and backend dependencies:
+Copy `.env.example` to `server/.env` if you need to change the defaults. Start the API and frontend in separate terminals:
 
 ```bash
-cd server
-npm install
-
-cd ../client
-npm install
+cd server && npm run dev
+cd client && npm run dev
 ```
 
-### Environment Variables
+Open `http://localhost:5173`. The API listens on `http://localhost:5000` by default.
 
-Create a `.env` file in the backend directory. The exact variables depend on the database and deployment configuration. A typical setup may include:
+The server creates `server/data/urls.json` on first start. This local data file is intentionally ignored by Git and is not suitable for multi-process or production persistence.
 
-```env
-PORT=5000
-DATABASE_URL=<your-database-connection-string>
-CLIENT_URL=http://localhost:3000
-BASE_URL=http://localhost:5000
-```
+## Configuration
 
-Do not commit `.env` files or production secrets to version control.
-
-### Run the Application
-
-Start the Express server:
-
-```bash
-cd server
-npm run dev
-```
-
-Start the React development server in a second terminal:
-
-```bash
-cd client
-npm start
-```
-
-The frontend is typically available at `http://localhost:3000`, and the API at `http://localhost:5000`.
-
-## API Overview
-
-The backend should expose endpoints similar to these:
-
-| Method | Endpoint | Description |
+| Variable | Default | Purpose |
 | --- | --- | --- |
-| `POST` | `/api/urls` | Create a short URL |
-| `GET` | `/:shortCode` | Redirect to the original URL |
-| `GET` | `/api/urls/:shortCode` | Retrieve short URL details, if supported |
+| `PORT` | `5000` | Port used by the API server |
+| `CLIENT_URL` | `http://localhost:5173` | Origin allowed by CORS |
+| `BASE_URL` | derived from the request | Base URL returned in generated short links |
 
-Example request:
+## API
 
-```http
-POST /api/urls
-Content-Type: application/json
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/health` | Return `{ "status": "ok" }` |
+| `GET` | `/api/urls` | List created links, newest first |
+| `POST` | `/api/urls` | Create a link from `{ "originalUrl": "https://example.com" }` |
+| `GET` | `/:code` | Redirect to the original URL and increment its click count |
 
-{
-  "originalUrl": "https://example.com/a/very/long/url"
-}
-```
+Only HTTP and HTTPS destinations are accepted. A successful create response includes `code`, `originalUrl`, `clicks`, `createdAt`, and `shortUrl`. Invalid destinations return HTTP 400; unknown short codes return HTTP 404.
 
-Example response:
-
-```json
-{
-  "shortCode": "abc123",
-  "shortUrl": "http://localhost:5000/abc123",
-  "originalUrl": "https://example.com/a/very/long/url"
-}
-```
-
-## Production Build
-
-Build the React application:
+## Tests and production build
 
 ```bash
-cd client
-npm run build
+cd server && npm test
+cd client && npm run build
 ```
 
-Configure Express to serve the generated frontend files, set production environment variables, and start the server using the production script defined in `server/package.json`.
+The server tests start the API on an available local port, exercise health, validation, creation, listing, redirect, click counting, and not-found behavior, then restore the local data file. The client build verifies that the React bundle compiles successfully.
 
-## Testing
+## Project layout
 
-Run the test commands defined by each package:
+- `client/` - React UI, Vite configuration, and responsive styles.
+- `server/` - Express routes, JSON-backed persistence, and tests.
+- `AGENTS.md` - contributor and automation guidance.
 
-```bash
-cd server
-npm test
-
-cd ../client
-npm test
-```
-
-## Security Considerations
-
-- Validate that submitted values are valid HTTP or HTTPS URLs.
-- Protect against open redirects and malicious destinations.
-- Add rate limiting to the URL creation endpoint.
-- Use secure, randomly generated short codes.
-- Keep database credentials and other secrets in environment variables.
-
-## License
-
-Add the project license here, for example `MIT`.
+Do not commit `.env` files, generated data, dependencies, coverage output, or build output.
